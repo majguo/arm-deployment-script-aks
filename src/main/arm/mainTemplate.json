@@ -54,7 +54,7 @@
                 "AzCliVersion": "2.15.0",
                 "arguments": "[variables('arguments')]",
                 "primaryScriptUri": "[uri(variables('scriptLocation'), concat('install.sh', parameters('_artifactsLocationSasToken')))]",
-                "cleanupPreference": "OnSuccess",
+                "cleanupPreference": "OnExpiration",
                 "retentionInterval": "P1D"
             }
         }
