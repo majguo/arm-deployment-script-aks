@@ -22,5 +22,6 @@ az aks get-credentials -g $resourceGroupName -n $aksClusterName --overwrite-exis
 # Test `kubectl` command
 echo $(kubectl cluster-info)
 
-# result=$(az keyvault list)
-# echo $result | jq -c '{Result: map({id: .id})}' > $AZ_SCRIPTS_OUTPUT_PATH
+# Test for scripts output
+result=$(az keyvault list)
+echo $result | jq -c '{Result: map({id: .id})}' > $AZ_SCRIPTS_OUTPUT_PATH
