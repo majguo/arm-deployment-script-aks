@@ -56,9 +56,6 @@
                             "password": "Service principal client secret",
                             "confirmPassword": "Confirm client secret"
                         },
-                        "options": {
-                            "hideConfirmation": true
-                        },
                         "toolTip": "The client secret of an existing service principal.",
                         "constraints": {
                             "required": true
