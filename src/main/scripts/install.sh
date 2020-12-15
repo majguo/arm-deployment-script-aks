@@ -3,8 +3,24 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-echo "arg1 is: $1"
-echo "arg2 is: $2"
+echo "resourceGroupName is: $1"
+echo "aksClusterName is: $2"
+echo "spClientId is: $3"
+echo "spClientSecret is: $4"
 
-result=$(az keyvault list)
-echo $result | jq -c '{Result: map({id: .id})}' > $AZ_SCRIPTS_OUTPUT_PATH
+resourceGroupName=$1
+aksClusterName=$2
+spClientId=$3
+spClientSecret=$4
+
+# Create AKS cluster
+az aks create -g $resourceGroupName -n $aksClusterName --service-principal $spClientId --client-secret $spClientSecret --generate-ssh-keys
+
+# Merge context info of the created AKS cluster for access
+az aks get-credentials -g $resourceGroupName -n $aksClusterName --overwrite-existing
+
+# Test `kubectl` command
+echo $(kubectl cluster-info)
+
+# result=$(az keyvault list)
+# echo $result | jq -c '{Result: map({id: .id})}' > $AZ_SCRIPTS_OUTPUT_PATH

@@ -16,10 +16,63 @@
                 }
             }
         ],
-        "steps": [],
+        "steps": [
+            {
+                "name": "AKSCluster",
+                "label": "Create AKS cluster",
+                "subLabel": {
+                    "preValidation": "Provide required info for AKS cluster creation",
+                    "postValidation": "Done"
+                },
+                "bladeTitle": "Create AKS cluster",
+                "elements": [
+                    {
+                        "name": "aksClusterName",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Cluster name",
+                        "defaultValue": "akscluster",
+                        "toolTip": "Use only allowed characters.",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-z0-9A-Z]{1,30}$",
+                            "validationMessage": "The value must be 1-30 characters long and must only contain letters and numbers."
+                        }
+                    },
+                    {
+                        "name": "spClientId",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Service principal client ID",
+                        "toolTip": "The client ID of an existing service principal.",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12}$",
+                            "validationMessage": "The service principal Id should be a valid global unique identifier (GUID). Example: 00000000-0000-0000-0000-000000000000"
+                        }
+                    },
+                    {
+                        "name": "spClientSecret",
+                        "type": "Microsoft.Common.PasswordBox",
+                        "label": {
+                            "password": "Service principal client secret",
+                            "confirmPassword": "Confirm client secret"
+                        },
+                        "options": {
+                            "hideConfirmation": true
+                        },
+                        "toolTip": "The client secret of an existing service principal.",
+                        "constraints": {
+                            "required": true
+                        }
+                    }
+                ]
+            }
+        ],
         "outputs": {
             "location": "[location()]",
-            "identityId": "[basics('identityId')]"
+            "identityId": "[basics('identityId')]",
+            "aksClusterName": "[steps('AKSCluster').aksClusterName]",
+            "spClientId": "[steps('AKSCluster').spClientId]",
+            "spClientSecret": "[steps('AKSCluster').spClientSecret]"
         }
     }
 }

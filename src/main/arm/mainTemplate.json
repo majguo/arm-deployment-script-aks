@@ -17,13 +17,24 @@
         "identityId": {
             "type": "string"
         },
+        "aksClusterName": {
+            "type": "string",
+            "defaultValue": "akscluster"
+        },        
+        "spClientId": {
+            "type": "string"
+        },
+        "spClientSecret": {
+            "type": "securestring"
+        },
         "utcValue": {
             "type": "string",
             "defaultValue": "[utcNow()]"
         }
     },
     "variables": {
-        "scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]"
+        "scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]",
+        "arguments": "[concat(resourceGroup().name, ' ', parameters('aksClusterName'), ' ', parameters('spClientId'), ' ', parameters('spClientSecret'))]"
     },
     "resources": [
         {
@@ -41,8 +52,7 @@
             "properties": {
                 "forceUpdateTag": "[parameters('utcValue')]",
                 "AzCliVersion": "2.15.0",
-                "timeout": "PT30M",
-                "arguments": "'foo','bar'",
+                "arguments": "[variables('arguments')]",
                 "primaryScriptUri": "[uri(variables('scriptLocation'), concat('install.sh', parameters('_artifactsLocationSasToken')))]",
                 "cleanupPreference": "OnSuccess",
                 "retentionInterval": "P1D"
@@ -50,10 +60,6 @@
         }
     ],
     "outputs": {
-        "scriptLocation": {
-            "type": "string",
-            "value": "[variables('scriptLocation')]"
-        },
         "result": {
             "value": "[reference('runBashWithOutputs').outputs]",
             "type": "object"

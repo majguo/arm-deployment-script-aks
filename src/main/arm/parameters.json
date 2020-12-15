@@ -7,6 +7,15 @@
         },
         "identityId": {
             "value": "${identityId}"
+        },
+        "aksClusterName": {
+            "value": "${aksClusterName}"
+        },
+        "spClientId": {
+            "value": "${spClientId}"
+        },
+        "spClientSecret": {
+            "value": "${spClientSecret}"
         }
     }
 }
