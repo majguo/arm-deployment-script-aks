@@ -34,7 +34,18 @@
                         "toolTip": "Use only allowed characters.",
                         "constraints": {
                             "required": true,
-                            "regex": "^[a-z0-9A-Z]{1,30}$",
+                            "regex": "^[a-z0-9A-Z\\-]{1,30}$",
+                            "validationMessage": "The value must be 1-30 characters long and must only contain letters and numbers."
+                        }
+                    },
+                    {
+                        "name": "aksClusterRGName",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Cluster resource group name",
+                        "toolTip": "Use only allowed characters.",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-z0-9A-Z\\-]{1,30}$",
                             "validationMessage": "The value must be 1-30 characters long and must only contain letters and numbers."
                         }
                     },
@@ -68,6 +79,7 @@
             "location": "[location()]",
             "identityId": "[basics('identityId')]",
             "aksClusterName": "[steps('AKSCluster').aksClusterName]",
+            "aksClusterRGName": "[steps('AKSCluster').aksClusterRGName]",
             "spClientId": "[steps('AKSCluster').spClientId]",
             "spClientSecret": "[steps('AKSCluster').spClientSecret]"
         }

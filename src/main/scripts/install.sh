@@ -23,8 +23,7 @@ az aks install-cli
 az aks get-credentials -g $resourceGroupName -n $aksClusterName --overwrite-existing
 
 # Get cluster info
-clusterInfo=$(kubectl cluster-info)
-echo $clusterInfo
+kubectl cluster-info
 
 # Test for scripts output
 result=$(az keyvault list)

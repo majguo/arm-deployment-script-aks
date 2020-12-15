@@ -20,6 +20,10 @@
         "aksClusterName": {
             "type": "string",
             "defaultValue": "akscluster"
+        }, 
+        "aksClusterRGName": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]"
         },        
         "spClientId": {
             "type": "string"
@@ -34,7 +38,7 @@
     },
     "variables": {
         "scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]",
-        "arguments": "[concat(resourceGroup().name, ' ', parameters('aksClusterName'), ' ', parameters('spClientId'), ' ', parameters('spClientSecret'))]"
+        "arguments": "[concat(parameters('aksClusterRGName'), ' ', parameters('aksClusterName'), ' ', parameters('spClientId'), ' ', parameters('spClientSecret'))]"
     },
     "resources": [
         {
