@@ -23,7 +23,7 @@
 
     <properties>
         <!-- `tracking.pid` is deprecated, use `template.pid.properties.url` & `template.microsoft.pid.properties.url` instead -->
-        <tracking.pid>pid-43132095-6df1-424b-a498-f589e28f61f</tracking.pid>
+        <tracking.pid>pid-43132095-6df1-424b-a498-f589e28f61fd</tracking.pid>
         <test.parameters>-TestParameter '@{&quot;PasswordMinLength&quot;=6}'</test.parameters>
     </properties>
 </project>
