@@ -13,14 +13,19 @@ aksClusterName=$2
 spClientId=$3
 spClientSecret=$4
 
+aksClusters=$(az aks list -o table)
+echo $aksClusters
+
 # Create AKS cluster
-az aks create -g $resourceGroupName -n $aksClusterName --service-principal $spClientId --client-secret $spClientSecret --generate-ssh-keys
+creatAKSCluster=$(az aks create -g $resourceGroupName -n $aksClusterName --service-principal $spClientId --client-secret $spClientSecret --generate-ssh-keys)
+echo $creatAKSCluster
 
 # Merge context info of the created AKS cluster for access
 az aks get-credentials -g $resourceGroupName -n $aksClusterName --overwrite-existing
 
 # Test `kubectl` command
-echo $(kubectl cluster-info)
+clusterInfo=$(kubectl cluster-info)
+echo $clusterInfo
 
 # Test for scripts output
 result=$(az keyvault list)
