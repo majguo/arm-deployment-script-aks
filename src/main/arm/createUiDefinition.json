@@ -1,0 +1,25 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+    "handler": "Microsoft.Azure.CreateUIDef",
+    "version": "0.1.2-preview",
+    "parameters": {
+        "basics": [
+            {
+                "name": "identityId",
+                "type": "Microsoft.Common.TextBox",
+                "label": "User Assigned Managed Identity",
+                "toolTip": "Input the id of User Assigned Managed Identity.",
+                "constraints": {
+                    "required": true,
+                    "regex": "^[a-z0-9A-Z\\-]+$",
+                    "validationMessage": "The prefix must be between 3 and 79 characters long and contain letters, numbers only."
+                }
+            }
+        ],
+        "steps": [],
+        "outputs": {
+            "location": "[location()]",
+            "identityId": "[basics('identityId')]"
+        }
+    }
+}

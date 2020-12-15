@@ -1,0 +1,62 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "_artifactsLocation": {
+            "type": "string",
+            "defaultValue": "[deployment().properties.templateLink.uri]"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "defaultValue": ""
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "identityId": {
+            "type": "string"
+        },
+        "utcValue": {
+            "type": "string",
+            "defaultValue": "[utcNow()]"
+        }
+    },
+    "variables": {
+        "scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deploymentScripts",
+            "apiVersion": "2020-10-01",
+            "name": "runBashWithOutputs",
+            "location": "[parameters('location')]",
+            "kind": "AzureCLI",
+            "identity": {
+                "type": "userAssigned",
+                "userAssignedIdentities": {
+                    "[parameters('identityId')]": {}
+                }
+            },
+            "properties": {
+                "forceUpdateTag": "[parameters('utcValue')]",
+                "AzCliVersion": "2.15.0",
+                "timeout": "PT30M",
+                "arguments": "'foo','bar'",
+                "primaryScriptUri": "[uri(variables('scriptLocation'), concat('install.sh', parameters('_artifactsLocationSasToken')))]",
+                "cleanupPreference": "OnSuccess",
+                "retentionInterval": "P1D"
+            }
+        }
+    ],
+    "outputs": {
+        "scriptLocation": {
+            "type": "string",
+            "value": "[variables('scriptLocation')]"
+        },
+        "result": {
+            "value": "[reference('runBashWithOutputs').outputs]",
+            "type": "object"
+        }
+    }
+}
