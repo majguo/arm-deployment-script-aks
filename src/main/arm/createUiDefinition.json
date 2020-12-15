@@ -30,7 +30,6 @@
                         "name": "aksClusterName",
                         "type": "Microsoft.Common.TextBox",
                         "label": "Cluster name",
-                        "defaultValue": "akscluster",
                         "toolTip": "Use only allowed characters.",
                         "constraints": {
                             "required": true,
