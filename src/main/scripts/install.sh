@@ -14,7 +14,7 @@ spClientId=$3
 spClientSecret=$4
 
 # Create AKS cluster
-az aks create -g $resourceGroupName -n $aksClusterName --service-principal $spClientId --client-secret $spClientSecret --generate-ssh-keys
+#az aks create -g $resourceGroupName -n $aksClusterName --service-principal $spClientId --client-secret $spClientSecret --generate-ssh-keys
 
 # Install `kubectl`
 az aks install-cli
