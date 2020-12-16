@@ -11,7 +11,7 @@
                 "toolTip": "Input the id of User Assigned Managed Identity.",
                 "constraints": {
                     "required": true,
-                    "regex": "[a-z0-9A-Z\\-\\.\\/]+$",
+                    "regex": "^[a-z0-9A-Z\\-\\.\\/]+$",
                     "validationMessage": "The user assigned managed identity ID should be a valid Azure resource ID. Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}"
                 }
             }
