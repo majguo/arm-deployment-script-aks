@@ -30,17 +30,7 @@
                         "name": "aksClusterName",
                         "type": "Microsoft.Common.TextBox",
                         "label": "Cluster name",
-                        "toolTip": "Use only allowed characters.",
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[a-z0-9A-Z\\-]+$",
-                            "validationMessage": "The value must only contain letters and numbers."
-                        }
-                    },
-                    {
-                        "name": "aksClusterRGName",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "Cluster resource group name",
+                        "defaultValue": "akscluster",
                         "toolTip": "Use only allowed characters.",
                         "constraints": {
                             "required": true,
@@ -78,7 +68,6 @@
             "location": "[location()]",
             "identityId": "[basics('identityId')]",
             "aksClusterName": "[steps('AKSCluster').aksClusterName]",
-            "aksClusterRGName": "[steps('AKSCluster').aksClusterRGName]",
             "spClientId": "[steps('AKSCluster').spClientId]",
             "spClientSecret": "[steps('AKSCluster').spClientSecret]"
         }

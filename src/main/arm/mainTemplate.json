@@ -30,15 +30,11 @@
         },
         "spClientSecret": {
             "type": "securestring"
-        },
-        "utcValue": {
-            "type": "string",
-            "defaultValue": "[utcNow()]"
         }
     },
     "variables": {
         "scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]",
-        "arguments": "[concat(parameters('aksClusterRGName'), ' ', parameters('aksClusterName'), ' ', parameters('spClientId'), ' ', parameters('spClientSecret'))]"
+        "arguments": "[concat(parameters('aksClusterRGName'), ' ', parameters('aksClusterName'))]"
     },
     "resources": [
         {
@@ -56,10 +52,44 @@
             }
         },
         {
+            "apiVersion": "2020-09-01",
+            "type": "Microsoft.ContainerService/managedClusters",
+            "location": "[parameters('location')]",
+            "name": "[parameters('aksClusterName')]",
+            "properties": {
+                "kubernetesVersion": "1.18.10",
+                "enableRBAC": true,
+                "dnsPrefix": "[concat(parameters('aksClusterName'), '-dns')]",
+                "agentPoolProfiles": [
+                    {
+                        "name": "agentpool",
+                        "osDiskSizeGB": 0,
+                        "count": 1,
+                        "vmSize": "Standard_DS2_v2",
+                        "osType": "Linux",
+                        "storageProfile": "ManagedDisks",
+                        "type": "VirtualMachineScaleSets",
+                        "mode": "System"
+                    }
+                ],
+                "networkProfile": {
+                    "loadBalancerSku": "standard",
+                    "networkPlugin": "kubenet"
+                },
+                "servicePrincipalProfile": {
+                    "ClientId": "[parameters('spClientId')]",
+                    "Secret": "[parameters('spClientSecret')]"
+                }
+            }
+        },
+        {
             "type": "Microsoft.Resources/deploymentScripts",
             "apiVersion": "2020-10-01",
-            "name": "runBashWithOutputs",
+            "name": "deploymentScript",
             "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName'))]"
+            ],
             "kind": "AzureCLI",
             "identity": {
                 "type": "userAssigned",
@@ -68,18 +98,17 @@
                 }
             },
             "properties": {
-                "forceUpdateTag": "[parameters('utcValue')]",
                 "AzCliVersion": "2.15.0",
                 "arguments": "[variables('arguments')]",
                 "primaryScriptUri": "[uri(variables('scriptLocation'), concat('install.sh', parameters('_artifactsLocationSasToken')))]",
-                "cleanupPreference": "OnExpiration",
+                "cleanupPreference": "OnSuccess",
                 "retentionInterval": "P1D"
             }
         }
     ],
     "outputs": {
         "result": {
-            "value": "[reference('runBashWithOutputs').outputs]",
+            "value": "[reference('deploymentScript').outputs]",
             "type": "object"
         }
     }

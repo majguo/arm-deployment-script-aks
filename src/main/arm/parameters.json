@@ -8,12 +8,6 @@
         "identityId": {
             "value": "${identityId}"
         },
-        "aksClusterName": {
-            "value": "${aksClusterName}"
-        },
-        "aksClusterRGName": {
-            "value": "${aksClusterRGName}"
-        },  
         "spClientId": {
             "value": "${spClientId}"
         },
