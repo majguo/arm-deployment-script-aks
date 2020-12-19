@@ -119,8 +119,8 @@
     ],
     "outputs": {
         "result": {
-            "value": "[reference('deploymentScript').outputs.applicationEndpoint]",
-            "type": "string"
+            "value": "[reference('deploymentScript').outputs]",
+            "type": "object"
         }
     }
 }
