@@ -32,6 +32,42 @@ export Application_Image=$appImage
 export Application_Name=$appName
 envsubst < openlibertyapplication.yaml | kubectl create -f -
 
-# Output application endpoint
+# Wait until the deployment completes
+kubectl get deployment ${Application_Name}
+while [ $? -ne 0 ]
+do
+      sleep 5
+      kubectl get deployment ${Application_Name}
+done
+replicas=$(kubectl get deployment ${Application_Name} -o=jsonpath='{.spec.replicas}')
+readyReplicas=$(kubectl get deployment ${Application_Name} -o=jsonpath='{.status.readyReplicas}')
+availableReplicas=$(kubectl get deployment ${Application_Name} -o=jsonpath='{.status.availableReplicas}')
+updatedReplicas=$(kubectl get deployment ${Application_Name} -o=jsonpath='{.status.updatedReplicas}')
+while [[ $replicas != $readyReplicas || $readyReplicas != $availableReplicas || $availableReplicas != $updatedReplicas ]]
+do
+      sleep 5
+      echo retry
+      replicas=$(kubectl get deployment ${Application_Name} -o=jsonpath='{.spec.replicas}')
+      readyReplicas=$(kubectl get deployment ${Application_Name} -o=jsonpath='{.status.readyReplicas}')
+      availableReplicas=$(kubectl get deployment ${Application_Name} -o=jsonpath='{.status.availableReplicas}')
+      updatedReplicas=$(kubectl get deployment ${Application_Name} -o=jsonpath='{.status.updatedReplicas}')
+done
+kubectl get svc ${Application_Name}
+while [ $? -ne 0 ]
+do
+      sleep 5
+      kubectl get svc ${Application_Name}
+done
 Application_Endpoint=$(kubectl get svc ${Application_Name} -o=jsonpath='{.status.loadBalancer.ingress[0].ip}:{.spec.ports[0].port}')
-echo $(jq -n --arg endpoint $Application_Endpoint '{applicationEndpoint: $endpoint}') > $AZ_SCRIPTS_OUTPUT_PATH
+while [[ $Application_Endpoint = :* ]]
+do
+      sleep 5
+      echo retry
+      Application_Endpoint=$(kubectl get svc ${Application_Name} -o=jsonpath='{.status.loadBalancer.ingress[0].ip}:{.spec.ports[0].port}')
+done
+
+# Output application endpoint
+echo "endpoint is: $Application_Endpoint"
+result=$(jq -n -c --arg endpoint $Application_Endpoint '{applicationEndpoint: $endpoint}')
+echo "result is: $result"
+echo $result > $AZ_SCRIPTS_OUTPUT_PATH
