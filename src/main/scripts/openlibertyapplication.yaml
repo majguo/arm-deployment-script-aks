@@ -1,0 +1,10 @@
+apiVersion: openliberty.io/v1beta1
+kind: OpenLibertyApplication
+metadata:
+  name: ${Application_Name}
+spec:
+  replicas: 1
+  applicationImage: ${Application_Image}
+  service:
+    type: LoadBalancer
+    port: 9080

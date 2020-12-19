@@ -30,11 +30,19 @@
         },
         "spClientSecret": {
             "type": "securestring"
+        },        
+        "appImage": {
+            "type": "string"
+        },        
+        "guidValue": {
+            "defaultValue": "[newGuid()]",
+            "type": "string"
         }
     },
     "variables": {
+        "appName": "[concat('app', take(replace(parameters('guidValue'), '-', ''), 6))]",
         "scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]",
-        "arguments": "[concat(parameters('aksClusterRGName'), ' ', parameters('aksClusterName'))]"
+        "arguments": "[concat(parameters('aksClusterRGName'), ' ', parameters('aksClusterName'), ' ', parameters('appImage'), ' ', variables('appName'))]"
     },
     "resources": [
         {
@@ -101,6 +109,9 @@
                 "AzCliVersion": "2.15.0",
                 "arguments": "[variables('arguments')]",
                 "primaryScriptUri": "[uri(variables('scriptLocation'), concat('install.sh', parameters('_artifactsLocationSasToken')))]",
+                "supportingScriptUris":[
+                    "[uri(variables('scriptLocation'), concat('openlibertyapplication.yaml', parameters('_artifactsLocationSasToken')))]"
+                ],
                 "cleanupPreference": "OnSuccess",
                 "retentionInterval": "P1D"
             }
@@ -108,8 +119,8 @@
     ],
     "outputs": {
         "result": {
-            "value": "[reference('deploymentScript').outputs]",
-            "type": "object"
+            "value": "[reference('deploymentScript').outputs.applicationEndpoint]",
+            "type": "string"
         }
     }
 }

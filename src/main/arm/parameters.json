@@ -13,6 +13,9 @@
         },
         "spClientSecret": {
             "value": "${spClientSecret}"
+        },
+        "appImage": {
+            "value": "${appImage}"
         }
     }
 }
