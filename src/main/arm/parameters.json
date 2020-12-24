@@ -8,11 +8,20 @@
         "identityId": {
             "value": "${identityId}"
         },
+        "createAKSCluster": {
+            "value": "${createAKSCluster}"
+        },
         "spClientId": {
             "value": "${spClientId}"
         },
         "spClientSecret": {
             "value": "${spClientSecret}"
+        },
+        "aksClusterName": {
+            "value": "${aksClusterName}"
+        }, 
+        "aksClusterRGName": {
+            "value": "${aksClusterRGName}"
         },
         "appImage": {
             "value": "${appImage}"

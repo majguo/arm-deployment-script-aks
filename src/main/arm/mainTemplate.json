@@ -17,20 +17,26 @@
         "identityId": {
             "type": "string"
         },
+        "createAKSCluster": {
+            "defaultValue": true,
+            "type": "bool"
+        },
+        "spClientId": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "spClientSecret": {
+            "type": "securestring",
+            "defaultValue": ""
+        },
         "aksClusterName": {
             "type": "string",
-            "defaultValue": "akscluster"
+            "defaultValue": ""
         }, 
         "aksClusterRGName": {
             "type": "string",
-            "defaultValue": "[resourceGroup().name]"
-        },        
-        "spClientId": {
-            "type": "string"
+            "defaultValue": ""
         },
-        "spClientSecret": {
-            "type": "securestring"
-        },        
         "appImage": {
             "type": "string"
         },        
@@ -40,9 +46,13 @@
         }
     },
     "variables": {
-        "appName": "[concat('app', take(replace(parameters('guidValue'), '-', ''), 6))]",
+        "suffix": "[take(replace(parameters('guidValue'), '-', ''), 6)]",
+        "aksClusterName": "[if(parameters('createAKSCluster'), concat('cluster', variables('suffix')), parameters('aksClusterName'))]",
+        "aksClusterRGName": "[if(parameters('createAKSCluster'), resourceGroup().name, parameters('aksClusterRGName'))]",
+        "appName": "[concat('app', variables('suffix'))]",
+        "deploymentScriptName": "[concat('script', variables('suffix'))]",
         "scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]",
-        "arguments": "[concat(parameters('aksClusterRGName'), ' ', parameters('aksClusterName'), ' ', parameters('appImage'), ' ', variables('appName'))]"
+        "arguments": "[concat(variables('aksClusterRGName'), ' ', variables('aksClusterName'), ' ', parameters('appImage'), ' ', variables('appName'))]"
     },
     "resources": [
         {
@@ -63,11 +73,12 @@
             "apiVersion": "2020-09-01",
             "type": "Microsoft.ContainerService/managedClusters",
             "location": "[parameters('location')]",
-            "name": "[parameters('aksClusterName')]",
+            "name": "[variables('aksClusterName')]",
+            "condition": "[parameters('createAKSCluster')]",
             "properties": {
                 "kubernetesVersion": "1.18.10",
                 "enableRBAC": true,
-                "dnsPrefix": "[concat(parameters('aksClusterName'), '-dns')]",
+                "dnsPrefix": "[concat(variables('aksClusterName'), '-dns')]",
                 "agentPoolProfiles": [
                     {
                         "name": "agentpool",
@@ -93,10 +104,10 @@
         {
             "type": "Microsoft.Resources/deploymentScripts",
             "apiVersion": "2020-10-01",
-            "name": "deploymentScript",
+            "name": "[variables('deploymentScriptName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('aksClusterName'))]"
             ],
             "kind": "AzureCLI",
             "identity": {
@@ -119,8 +130,16 @@
     ],
     "outputs": {
         "result": {
-            "value": "[reference('deploymentScript').outputs]",
+            "value": "[reference(variables('deploymentScriptName')).outputs]",
             "type": "object"
+        },
+        "aksClusterName": {
+            "value": "[variables('aksClusterName')]",
+            "type": "string"
+        },
+        "aksClusterRGName": {
+            "value": "[variables('aksClusterRGName')]",
+            "type": "string"
         }
     }
 }

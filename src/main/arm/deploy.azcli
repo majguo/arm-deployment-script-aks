@@ -115,6 +115,8 @@ resourceGroupLocation=$( az group show --name $resourceGroupName | jq -r '.locat
 
 #parameters JSON
 parametersJson=$( cat $parametersFilePath | jq '.parameters' )
+createAKSCluster=$( echo $parametersJson | jq '.createAKSCluster.value' | sed 's/"//g' )
+parametersJson=$( echo $parametersJson | jq --argjson createCluster "$createAKSCluster" '.createAKSCluster.value = $createCluster' )
 parametersJson=$( echo "$parametersJson" | jq -c '.' )
 
 #Start deployment
