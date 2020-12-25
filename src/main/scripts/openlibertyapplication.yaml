@@ -3,7 +3,7 @@ kind: OpenLibertyApplication
 metadata:
   name: ${Application_Name}
 spec:
-  replicas: 1
+  replicas: ${Application_Replicas}
   applicationImage: ${Application_Image}
   service:
     type: LoadBalancer

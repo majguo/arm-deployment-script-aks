@@ -39,7 +39,11 @@
         },
         "appImage": {
             "type": "string"
-        },        
+        },
+        "appReplicas": {
+            "type": "int",
+            "defaultValue": 1
+        },
         "guidValue": {
             "defaultValue": "[newGuid()]",
             "type": "string"
@@ -52,7 +56,7 @@
         "appName": "[concat('app', variables('suffix'))]",
         "deploymentScriptName": "[concat('script', variables('suffix'))]",
         "scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]",
-        "arguments": "[concat(variables('aksClusterRGName'), ' ', variables('aksClusterName'), ' ', parameters('appImage'), ' ', variables('appName'))]"
+        "arguments": "[concat(variables('aksClusterRGName'), ' ', variables('aksClusterName'), ' ', parameters('appImage'), ' ', variables('appName'), ' ', parameters('appReplicas'))]"
     },
     "resources": [
         {
@@ -129,10 +133,6 @@
         }
     ],
     "outputs": {
-        "result": {
-            "value": "[reference(variables('deploymentScriptName')).outputs]",
-            "type": "object"
-        },
         "aksClusterName": {
             "value": "[variables('aksClusterName')]",
             "type": "string"
@@ -140,6 +140,14 @@
         "aksClusterRGName": {
             "value": "[variables('aksClusterRGName')]",
             "type": "string"
+        },
+        "appName": {
+            "value": "[variables('appName')]",
+            "type": "string"
+        },
+        "result": {
+            "value": "[reference(variables('deploymentScriptName')).outputs]",
+            "type": "object"
         }
     }
 }

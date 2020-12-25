@@ -25,6 +25,9 @@
         },
         "appImage": {
             "value": "${appImage}"
+        },
+        "appReplicas": {
+            "value": "${appReplicas}"
         }
     }
 }

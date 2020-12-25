@@ -7,6 +7,7 @@ resourceGroupName=$1
 aksClusterName=$2
 appImage=$3
 appName=$4
+appReplicas=$5
 
 # Install utilities
 apk update
@@ -30,6 +31,7 @@ curl -L https://raw.githubusercontent.com/OpenLiberty/open-liberty-operator/mast
 # Deploy openliberty application
 export Application_Image=$appImage
 export Application_Name=$appName
+export Application_Replicas=$appReplicas
 envsubst < openlibertyapplication.yaml | kubectl create -f -
 
 # Wait until the deployment completes
