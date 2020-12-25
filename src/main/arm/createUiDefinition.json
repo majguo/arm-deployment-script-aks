@@ -128,6 +128,18 @@
                             "regex": "^[a-z0-9A-Z\\-\\.\\/\\:]+$",
                             "validationMessage": "The application image should be a valid container image. Example: openliberty/open-liberty:kernel-java8-openj9-ubi"
                         }
+                    },
+                    {
+                        "name": "appReplicas",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Number of application replicas",
+                        "defaultValue": "2",
+                        "toolTip": "The number of application replicas to deploy.",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^(1|2|3|4|5)$",
+                            "validationMessage": "Number of application replicas to deploy, limit 1-5."
+                        }
                     }
                 ]
             }
@@ -140,7 +152,8 @@
             "spClientSecret": "[steps('AKSCluster').servicePrincipal.spClientSecret]",
             "aksClusterName": "[steps('AKSCluster').clusterInfo.aksClusterName]",
             "aksClusterRGName": "[steps('AKSCluster').clusterInfo.aksClusterRGName]",
-            "appImage": "[steps('Application').appImage]"
+            "appImage": "[steps('Application').appImage]",
+            "appReplicas": "[int(steps('Application').appReplicas)]"
         }
     }
 }
