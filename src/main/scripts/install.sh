@@ -34,20 +34,32 @@ curl -L https://raw.githubusercontent.com/OpenLiberty/open-liberty-operator/mast
       | sed -e "s/OPEN_LIBERTY_WATCH_NAMESPACE/${WATCH_NAMESPACE}/" \
       | kubectl apply -n ${OPERATOR_NAMESPACE} -f -
 
-# Download applicatoin package
-appPackage=${appName}.war
-wget -O ${appPackage} "$appPackageUrl"
-ls -al ${appPackage}
-
 # Log into the ACR
 LOGIN_SERVER=$(az acr show -n $acrName --query loginServer | tr -d '"')
 USER_NAME=$(az acr credential show -n $acrName --query username | tr -d '"')
 PASSWORD=$(az acr credential show -n $acrName --query passwords[0].value | tr -d '"')
 docker login $LOGIN_SERVER -u $USER_NAME -p $PASSWORD
 
+# Prepare artifacts for building image
+cp server.xml /tmp/server.xml.template
+cp Dockerfile /tmp/Dockerfile.template
+cp Dockerfile-wlp /tmp/Dockerfile-wlp.template
+cp openlibertyapplication.yaml /tmp
+cd /tmp
+
+export Application_Package=${appName}.war
+wget -O ${Application_Package} "$appPackageUrl"
+
+export Application_Name=$appName
+envsubst < "server.xml.template" > "server.xml"
+envsubst < "Dockerfile.template" > "Dockerfile"
+envsubst < "Dockerfile-wlp.template" > "Dockerfile-wlp"
+
+# Build image
+az acr build -t ${Application_Name}:1.0.0 -r $acrName .
+
 # Deploy openliberty application
 export Application_Image=$appImage
-export Application_Name=$appName
 export Application_Replicas=$appReplicas
 envsubst < openlibertyapplication.yaml | kubectl create -f -
 
