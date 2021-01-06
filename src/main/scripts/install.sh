@@ -14,6 +14,7 @@ appReplicas=$7
 # Install utilities
 apk update
 apk add gettext
+apk add docker-cli
 
 # Install `kubectl` and connect to the AKS cluster
 az aks install-cli
