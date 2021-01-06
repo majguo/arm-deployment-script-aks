@@ -5,9 +5,11 @@
 
 resourceGroupName=$1
 aksClusterName=$2
-appImage=$3
-appName=$4
-appReplicas=$5
+acrName=$3
+appPackageUrl=$4
+appImage=$5
+appName=$6
+appReplicas=$7
 
 # Install utilities
 apk update
@@ -27,6 +29,11 @@ curl -L https://raw.githubusercontent.com/OpenLiberty/open-liberty-operator/mast
 curl -L https://raw.githubusercontent.com/OpenLiberty/open-liberty-operator/master/deploy/releases/0.7.0/openliberty-app-operator.yaml \
       | sed -e "s/OPEN_LIBERTY_WATCH_NAMESPACE/${WATCH_NAMESPACE}/" \
       | kubectl apply -n ${OPERATOR_NAMESPACE} -f -
+
+# Download applicatoin package
+appPackage=${appName}.war
+wget -O ${appPackage} "$appPackageUrl"
+ls -al ${appPackage}
 
 # Deploy openliberty application
 export Application_Image=$appImage
