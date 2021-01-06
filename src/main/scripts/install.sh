@@ -19,6 +19,9 @@ apk add gettext
 az aks install-cli
 az aks get-credentials -g $resourceGroupName -n $aksClusterName --overwrite-existing
 
+# Attach the ACR
+az aks update -g $resourceGroupName -n $aksClusterName --attach-acr $acrName
+
 # Install Open Liberty Operator V0.7
 OPERATOR_NAMESPACE=default
 WATCH_NAMESPACE='""'
@@ -34,6 +37,12 @@ curl -L https://raw.githubusercontent.com/OpenLiberty/open-liberty-operator/mast
 appPackage=${appName}.war
 wget -O ${appPackage} "$appPackageUrl"
 ls -al ${appPackage}
+
+# Log into the ACR
+LOGIN_SERVER=$(az acr show -n $acrName --query loginServer | tr -d '"')
+USER_NAME=$(az acr credential show -n $acrName --query username | tr -d '"')
+PASSWORD=$(az acr credential show -n $acrName --query passwords[0].value | tr -d '"')
+docker login $LOGIN_SERVER -u $USER_NAME -p $PASSWORD
 
 # Deploy openliberty application
 export Application_Image=$appImage
