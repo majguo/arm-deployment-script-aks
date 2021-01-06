@@ -7,9 +7,8 @@ resourceGroupName=$1
 aksClusterName=$2
 acrName=$3
 appPackageUrl=$4
-appImage=$5
-appName=$6
-appReplicas=$7
+appName=$5
+appReplicas=$6
 
 # Install utilities
 apk update
@@ -59,7 +58,7 @@ envsubst < "Dockerfile-wlp.template" > "Dockerfile-wlp"
 az acr build -t ${Application_Name}:1.0.0 -r $acrName .
 
 # Deploy openliberty application
-export Application_Image=$appImage
+export Application_Image=${LOGIN_SERVER}/${Application_Name}:1.0.0
 export Application_Replicas=$appReplicas
 envsubst < openlibertyapplication.yaml | kubectl create -f -
 
