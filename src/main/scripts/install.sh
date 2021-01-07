@@ -55,6 +55,7 @@ envsubst < "Dockerfile.template" > "Dockerfile"
 envsubst < "Dockerfile-wlp.template" > "Dockerfile-wlp"
 
 # Build image
+# TODO: Use appropriate Dockerfile per user input
 az acr build -t ${Application_Name}:1.0.0 -r $acrName .
 
 # Deploy openliberty application

@@ -23,9 +23,6 @@
         "aksClusterRGName": {
             "value": "${aksClusterRGName}"
         },
-        "appImage": {
-            "value": "${appImage}"
-        },
         "appReplicas": {
             "value": "${appReplicas}"
         }
