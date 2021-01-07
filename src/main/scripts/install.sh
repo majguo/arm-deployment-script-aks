@@ -40,10 +40,10 @@ PASSWORD=$(az acr credential show -n $acrName --query passwords[0].value | tr -d
 docker login $LOGIN_SERVER -u $USER_NAME -p $PASSWORD
 
 # Prepare artifacts for building image
-cp server.xml /tmp/server.xml.template
-cp Dockerfile /tmp/Dockerfile.template
-cp Dockerfile-wlp /tmp/Dockerfile-wlp.template
-cp openlibertyapplication.yaml /tmp
+cp server.xml.template /tmp
+cp Dockerfile.template /tmp
+cp Dockerfile-wlp.template /tmp
+cp openlibertyapplication.yaml.template /tmp
 cd /tmp
 
 export Application_Package=${appName}.war
@@ -61,7 +61,7 @@ az acr build -t ${Application_Name}:1.0.0 -r $acrName .
 # Deploy openliberty application
 export Application_Image=${LOGIN_SERVER}/${Application_Name}:1.0.0
 export Application_Replicas=$appReplicas
-envsubst < openlibertyapplication.yaml | kubectl create -f -
+envsubst < openlibertyapplication.yaml.template | kubectl create -f -
 
 # Wait until the deployment completes
 kubectl get deployment ${Application_Name}

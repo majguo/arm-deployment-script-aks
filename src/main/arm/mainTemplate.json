@@ -141,10 +141,10 @@
                 "arguments": "[variables('arguments')]",
                 "primaryScriptUri": "[uri(variables('scriptLocation'), concat('install.sh', parameters('_artifactsLocationSasToken')))]",
                 "supportingScriptUris":[
-                    "[uri(variables('scriptLocation'), concat('openlibertyapplication.yaml', parameters('_artifactsLocationSasToken')))]",
-                    "[uri(variables('scriptLocation'), concat('server.xml', parameters('_artifactsLocationSasToken')))]",
-                    "[uri(variables('scriptLocation'), concat('Dockerfile', parameters('_artifactsLocationSasToken')))]",
-                    "[uri(variables('scriptLocation'), concat('Dockerfile-wlp', parameters('_artifactsLocationSasToken')))]"
+                    "[uri(variables('scriptLocation'), concat('openlibertyapplication.yaml.template', parameters('_artifactsLocationSasToken')))]",
+                    "[uri(variables('scriptLocation'), concat('server.xml.template', parameters('_artifactsLocationSasToken')))]",
+                    "[uri(variables('scriptLocation'), concat('Dockerfile.template', parameters('_artifactsLocationSasToken')))]",
+                    "[uri(variables('scriptLocation'), concat('Dockerfile-wlp.template', parameters('_artifactsLocationSasToken')))]"
                 ],
                 "cleanupPreference": "OnSuccess",
                 "retentionInterval": "P1D"
