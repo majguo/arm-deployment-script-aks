@@ -10,9 +10,10 @@ IFS=$'\n\t'
 # -o: prevents errors in a pipeline from being masked
 # IFS new value is less likely to cause confusing bugs when looping arrays or arguments (e.g. $@)
 
-usage() { echo "Usage: $0 -n <deploymentName> -i <subscriptionId> -g <resourceGroupName> -l <resourceGroupLocation>" 1>&2; exit 1; }
+usage() { echo "Usage: $0 -n <deploymentName> -f <appPackage> -i <subscriptionId> -g <resourceGroupName> -l <resourceGroupLocation>" 1>&2; exit 1; }
 
 declare deploymentName=""
+declare appPackage=""
 declare subscriptionId=""
 declare resourceGroupName=""
 declare resourceGroupLocation=""
@@ -22,6 +23,9 @@ while getopts ":n:f:i:g:l:" arg; do
 	case "${arg}" in
 		n)
 			deploymentName=${OPTARG}
+			;;
+		f)
+			appPackage=${OPTARG}
 			;;
 		i)
 			subscriptionId=${OPTARG}
@@ -40,6 +44,13 @@ shift $((OPTIND-1))
 if [[ -z "$deploymentName" ]]; then
 	echo "Enter a name for this deployment:"
 	read deploymentName
+fi
+
+if [[ ! -f "$appPackage" ]]; then
+	echo "The application package (.war) file is necessary to deploy."
+	echo "Enter the path of application package file:"
+	read appPackage
+	[[ -f "$appPackage" ]]
 fi
 
 if [[ -z "$subscriptionId" ]]; then
@@ -65,8 +76,8 @@ if [[ -z "$resourceGroupLocation" ]]; then
 	read resourceGroupLocation
 fi
 
-if [ -z "$deploymentName" ] || [ -z "$subscriptionId" ] || [ -z "$resourceGroupName" ]; then
-	echo "Either one of deploymentName, subscriptionId and resourceGroupName is empty"
+if [ -z "$deploymentName" ] || [ ! -f "$appPackage" ] || [ -z "$subscriptionId" ] || [ -z "$resourceGroupName" ]; then
+	echo "Either one of deploymentName, appPackage, subscriptionId and resourceGroupName is empty"
 	usage
 fi
 
@@ -113,12 +124,68 @@ if [ $? != 0 ]; then
 fi
 resourceGroupLocation=$( az group show --name $resourceGroupName | jq -r '.location' )
 
+#Create storage account and upload appliation package file to storage account
+#Create storage account if not existing
+storageAccountName="${subscriptionId//-/}"
+storageAccountName="${storageAccountName:0:19}"
+storageAccountName="stage$storageAccountName"
+
+if [[ -z $( az storage account list -o json | jq -r --arg accountName "$storageAccountName" '.[].name | select(. == $accountName)' ) ]]; then
+	echo "Storage account with name" $storageAccountName "could not be found. Creating new storage account..."
+	set -e
+	(
+		set -x
+		az storage account create -l "$resourceGroupLocation" --sku "Standard_LRS" -g "$resourceGroupName" -n "$storageAccountName" >/dev/null 2>&1
+	)
+	else
+	echo "Using existing storage account..."
+fi
+
+#Create storage container if not existing
+storageContainerName=${resourceGroupName}"-stageartifacts"
+storageContainerName=$( echo "$storageContainerName" | awk '{print tolower($0)}')
+storageAccountKey=$( az storage account keys list -g "$resourceGroupName" -n "$storageAccountName" -o json | jq -r '.[0].value' )
+if [[ $( az storage container exists --name "$storageContainerName" --account-name "$storageAccountName" --account-key "$storageAccountKey" -o json | jq '.exists') = false ]]; then
+	echo "Storage container with name" $storageContainerName "could not be found. Creating new storage container..."
+	set -e
+	(
+		set -x
+		az storage container create -n "$storageContainerName" --account-name "$storageAccountName" --account-key "$storageAccountKey" >/dev/null 2>&1
+	)
+	else
+	echo "Using existing storage container..."
+fi
+
+#Upload IBM DB2 Server install kit to storage container
+fileName=$(basename "$appPackage")
+if [[ $( az storage blob exists -n "$fileName" -c "$storageContainerName" --account-name "$storageAccountName" --account-key "$storageAccountKey" -o json | jq '.exists') = false ]]; then
+	echo "Storage blob with name" $fileName "could not be found. Creating new storage blob..."
+	set -e
+	(
+		set -x
+		az storage blob upload -f "$appPackage" -c $storageContainerName -n "$fileName" --account-name "$storageAccountName" --account-key "$storageAccountKey"
+	)
+	else
+	echo "Using existing storage blob..."
+fi
+
+set +u
+
+#Get a 4-hour SAS Token for the artifacts container. Fall back to OSX date syntax if Linux syntax fails.
+plusFourHoursUtc=$(date -u -v+4H +%Y-%m-%dT%H:%MZ 2>/dev/null)  || plusFourHoursUtc=$(date -u --date "$dte 4 hour" +%Y-%m-%dT%H:%MZ)
+
+#Generate SAS token
+sasToken=$( az storage container generate-sas -n "$storageContainerName" --permissions r --expiry "$plusFourHoursUtc" --account-name "$storageAccountName" --account-key "$storageAccountKey" -o json | sed 's/"//g')
+blobEndpoint=$( az storage account show -n "$storageAccountName" -g "$resourceGroupName" -o json | jq -r '.primaryEndpoints.blob' )
+appPackageUrl=$blobEndpoint$storageContainerName/"$fileName"?$sasToken
+
 #parameters JSON
 parametersJson=$( cat $parametersFilePath | jq '.parameters' )
 createAKSCluster=$( echo $parametersJson | jq '.createAKSCluster.value' | sed 's/"//g' )
 parametersJson=$( echo $parametersJson | jq --argjson createCluster "$createAKSCluster" '.createAKSCluster.value = $createCluster' )
 appReplicas=$( echo $parametersJson | jq '.appReplicas.value' | sed 's/"//g' )
 parametersJson=$( echo $parametersJson | jq --argjson replicas "$appReplicas" '.appReplicas.value = $replicas' )
+parametersJson=$( echo "$parametersJson" | jq --arg uri "$appPackageUrl" '{"appPackageUrl": {"value":$uri}} + .' )
 parametersJson=$( echo "$parametersJson" | jq -c '.' )
 
 #Start deployment

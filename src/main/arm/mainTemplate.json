@@ -37,7 +37,7 @@
             "type": "string",
             "defaultValue": ""
         },
-        "appImage": {
+        "appPackageUrl": {
             "type": "string"
         },
         "appReplicas": {
@@ -53,10 +53,11 @@
         "suffix": "[take(replace(parameters('guidValue'), '-', ''), 6)]",
         "aksClusterName": "[if(parameters('createAKSCluster'), concat('cluster', variables('suffix')), parameters('aksClusterName'))]",
         "aksClusterRGName": "[if(parameters('createAKSCluster'), resourceGroup().name, parameters('aksClusterRGName'))]",
+        "acrName": "[concat('acr', variables('suffix'))]",
         "appName": "[concat('app', variables('suffix'))]",
         "deploymentScriptName": "[concat('script', variables('suffix'))]",
         "scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]",
-        "arguments": "[concat(variables('aksClusterRGName'), ' ', variables('aksClusterName'), ' ', parameters('appImage'), ' ', variables('appName'), ' ', parameters('appReplicas'))]"
+        "arguments": "[concat(variables('aksClusterRGName'), ' ', variables('aksClusterName'), ' ', variables('acrName'), ' ', parameters('appPackageUrl'), ' ', variables('appName'), ' ', parameters('appReplicas'))]"
     },
     "resources": [
         {
@@ -74,10 +75,25 @@
             }
         },
         {
+            "apiVersion": "2019-12-01-preview",
+            "type": "Microsoft.ContainerRegistry/registries",
+            "name": "[variables('acrName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "adminUserEnabled": true
+            }
+        },
+        {
             "apiVersion": "2020-09-01",
             "type": "Microsoft.ContainerService/managedClusters",
-            "location": "[parameters('location')]",
             "name": "[variables('aksClusterName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerRegistry/registries', variables('acrName'))]"
+            ],
             "condition": "[parameters('createAKSCluster')]",
             "properties": {
                 "kubernetesVersion": "1.18.10",
@@ -125,7 +141,10 @@
                 "arguments": "[variables('arguments')]",
                 "primaryScriptUri": "[uri(variables('scriptLocation'), concat('install.sh', parameters('_artifactsLocationSasToken')))]",
                 "supportingScriptUris":[
-                    "[uri(variables('scriptLocation'), concat('openlibertyapplication.yaml', parameters('_artifactsLocationSasToken')))]"
+                    "[uri(variables('scriptLocation'), concat('openlibertyapplication.yaml', parameters('_artifactsLocationSasToken')))]",
+                    "[uri(variables('scriptLocation'), concat('server.xml', parameters('_artifactsLocationSasToken')))]",
+                    "[uri(variables('scriptLocation'), concat('Dockerfile', parameters('_artifactsLocationSasToken')))]",
+                    "[uri(variables('scriptLocation'), concat('Dockerfile-wlp', parameters('_artifactsLocationSasToken')))]"
                 ],
                 "cleanupPreference": "OnSuccess",
                 "retentionInterval": "P1D"
