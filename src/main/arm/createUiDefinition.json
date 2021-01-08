@@ -119,14 +119,17 @@
                 "bladeTitle": "Configure Java EE Application",
                 "elements": [
                     {
-                        "name": "appImage",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "Application image",
-                        "toolTip": "The application image in the pubic image registry.",
+                        "name": "appPackageUrl",
+                        "type": "Microsoft.Common.FileUpload",
+                        "label": "Application package (.war)",
+                        "toolTip": "The application war package to deploy.",
                         "constraints": {
-                            "required": true,
-                            "regex": "^[a-z0-9A-Z\\-\\.\\/\\:]+$",
-                            "validationMessage": "The application image should be a valid container image. Example: openliberty/open-liberty:kernel-java8-openj9-ubi"
+                            "required": true
+                        },
+                        "options": {
+                            "multiple": false,
+                            "uploadMode": "url",
+                            "openMode": "binary"
                         }
                     },
                     {
@@ -152,7 +155,7 @@
             "spClientSecret": "[steps('AKSCluster').servicePrincipal.spClientSecret]",
             "aksClusterName": "[steps('AKSCluster').clusterInfo.aksClusterName]",
             "aksClusterRGName": "[steps('AKSCluster').clusterInfo.aksClusterRGName]",
-            "appImage": "[steps('Application').appImage]",
+            "appPackageUrl": "[steps('Application').appPackageUrl]",
             "appReplicas": "[int(steps('Application').appReplicas)]"
         }
     }
