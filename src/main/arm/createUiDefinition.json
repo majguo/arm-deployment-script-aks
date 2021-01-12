@@ -21,7 +21,7 @@
                 "name": "AKSCluster",
                 "label": "Configure AKS cluster",
                 "subLabel": {
-                    "preValidation": "Provide required info for AKS cluster creation",
+                    "preValidation": "Provide required info for AKS cluster configuration",
                     "postValidation": "Done"
                 },
                 "bladeTitle": "Configure AKS cluster",
@@ -110,6 +110,56 @@
                 ]
             },
             {
+                "name": "ACRInstance",
+                "label": "Configure ACR instance",
+                "subLabel": {
+                    "preValidation": "Provide required info for ACR instance configuration",
+                    "postValidation": "Done"
+                },
+                "bladeTitle": "Configure ACR instance",
+                "elements": [
+                    {
+                        "name": "createACR",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "Create a new ACR instance?",
+                        "defaultValue": "Yes",
+                        "toolTip": "Select 'Yes' to create a new ACR instance, or select 'No' to provide an existing ACR instance.",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "Yes",
+                                    "value": "true"
+                                },
+                                {
+                                    "label": "No",
+                                    "value": "false"
+                                }
+                            ],
+                            "required": true
+                        }
+                    },
+                    {
+                        "name": "acrInfo",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Provide information for an existing ACR instance",
+                        "elements": [
+                            {
+                                "name": "acrName",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Registry name",
+                                "toolTip": "Use only allowed characters.",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^[a-z0-9A-Z\\-]+$",
+                                    "validationMessage": "The value must only contain letters and numbers."
+                                }
+                            }
+                        ],
+                        "visible": "[not(bool(steps('ACRInstance').createACR))]"
+                    }
+                ]
+            },
+            {
                 "name": "Application",
                 "label": "Configure Java EE Application",
                 "subLabel": {
@@ -155,6 +205,8 @@
             "spClientSecret": "[steps('AKSCluster').servicePrincipal.spClientSecret]",
             "aksClusterName": "[steps('AKSCluster').clusterInfo.aksClusterName]",
             "aksClusterRGName": "[steps('AKSCluster').clusterInfo.aksClusterRGName]",
+            "createACR": "[bool(steps('ACRInstance').createACR)]",
+            "acrName": "[steps('ACRInstance').acrInfo.acrName]",
             "appPackageUrl": "[steps('Application').appPackageUrl]",
             "appReplicas": "[int(steps('Application').appReplicas)]"
         }
