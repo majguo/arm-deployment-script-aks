@@ -10,24 +10,20 @@ IFS=$'\n\t'
 # -o: prevents errors in a pipeline from being masked
 # IFS new value is less likely to cause confusing bugs when looping arrays or arguments (e.g. $@)
 
-usage() { echo "Usage: $0 -f <appPackage> -i <subscriptionId> -g <resourceGroupName> -l <resourceGroupLocation>" 1>&2; exit 1; }
+usage() { echo "Usage: $0 -f <appPackage> -i <subscriptionId> -l <resourceGroupLocation>" 1>&2; exit 1; }
 
 declare appPackage=""
 declare subscriptionId=""
-declare resourceGroupName=""
 declare resourceGroupLocation=""
 
 # Initialize parameters specified from command line
-while getopts ":f:i:g:l:" arg; do
+while getopts ":f:i:l:" arg; do
 	case "${arg}" in
 		f)
 			appPackage=${OPTARG}
 			;;
 		i)
 			subscriptionId=${OPTARG}
-			;;
-		g)
-			resourceGroupName=${OPTARG}
 			;;
 		l)
 			resourceGroupLocation=${OPTARG}
@@ -51,14 +47,6 @@ if [[ -z "$subscriptionId" ]]; then
 	[[ "${subscriptionId:?}" ]]
 fi
 
-if [[ -z "$resourceGroupName" ]]; then
-	echo "This script will look for an existing resource group, otherwise a new one will be created "
-	echo "You can create new resource groups with the CLI using: az group create "
-	echo "Enter a resource group name"
-	read resourceGroupName
-	[[ "${resourceGroupName:?}" ]]
-fi
-
 if [[ -z "$resourceGroupLocation" ]]; then
 	echo "If creating a *new* resource group, you need to set a location "
 	echo "You can lookup locations with the CLI using: az account list-locations "
@@ -67,7 +55,7 @@ if [[ -z "$resourceGroupLocation" ]]; then
 	read resourceGroupLocation
 fi
 
-if [ ! -f "$appPackage" ] || [ -z "$subscriptionId" ] || [ -z "$resourceGroupName" ]; then
+if [ ! -f "$appPackage" ] || [ -z "$subscriptionId" ]; then
 	echo "Either one of appPackage, subscriptionId and resourceGroupName is empty"
 	usage
 fi
@@ -84,42 +72,43 @@ az account set --subscription $subscriptionId
 
 set +e
 
-#Check for existing RG
-az group show --name $resourceGroupName 1> /dev/null
-
-if [ $? != 0 ]; then
-	echo "Resource group with name" $resourceGroupName "could not be found. Creating new resource group.."
-	set -e
-	(
-		set -x
-		az group create --name $resourceGroupName --location $resourceGroupLocation 1> /dev/null
-	)
-	else
-	echo "Using existing resource group..."
-fi
-resourceGroupLocation=$( az group show --name $resourceGroupName | jq -r '.location' )
-
 #Create storage account and upload appliation package file to storage account
 #Create storage account if not existing
 storageAccountName="${subscriptionId//-/}"
 storageAccountName="${storageAccountName:0:19}"
 storageAccountName="stage$storageAccountName"
+storageAccountRGName=${storageAccountName}"-rg"
+
+#Check for existing RG
+az group show --name $storageAccountRGName 1> /dev/null
+
+if [ $? != 0 ]; then
+	echo "Resource group with name" $storageAccountRGName "could not be found. Creating new resource group.."
+	set -e
+	(
+		set -x
+		az group create --name $storageAccountRGName --location $resourceGroupLocation 1> /dev/null
+	)
+	else
+	echo "Using existing resource group..."
+fi
+storageAccountRGLocation=$( az group show --name $storageAccountRGName | jq -r '.location' )
 
 if [[ -z $( az storage account list -o json | jq -r --arg accountName "$storageAccountName" '.[].name | select(. == $accountName)' ) ]]; then
 	echo "Storage account with name" $storageAccountName "could not be found. Creating new storage account..."
 	set -e
 	(
 		set -x
-		az storage account create -l "$resourceGroupLocation" --sku "Standard_LRS" -g "$resourceGroupName" -n "$storageAccountName" >/dev/null 2>&1
+		az storage account create -l "$storageAccountRGLocation" --sku "Standard_LRS" -g "$storageAccountRGName" -n "$storageAccountName" >/dev/null 2>&1
 	)
 	else
 	echo "Using existing storage account..."
 fi
 
 #Create storage container if not existing
-storageContainerName=${resourceGroupName}"-stageartifacts"
+storageContainerName=${storageAccountName}"-container"
 storageContainerName=$( echo "$storageContainerName" | awk '{print tolower($0)}')
-storageAccountKey=$( az storage account keys list -g "$resourceGroupName" -n "$storageAccountName" -o json | jq -r '.[0].value' )
+storageAccountKey=$( az storage account keys list -g "$storageAccountRGName" -n "$storageAccountName" -o json | jq -r '.[0].value' )
 if [[ $( az storage container exists --name "$storageContainerName" --account-name "$storageAccountName" --account-key "$storageAccountKey" -o json | jq '.exists') = false ]]; then
 	echo "Storage container with name" $storageContainerName "could not be found. Creating new storage container..."
 	set -e
@@ -151,7 +140,7 @@ plusFourHoursUtc=$(date -u -v+4H +%Y-%m-%dT%H:%MZ 2>/dev/null)  || plusFourHours
 
 #Generate SAS token
 sasToken=$( az storage container generate-sas -n "$storageContainerName" --permissions r --expiry "$plusFourHoursUtc" --account-name "$storageAccountName" --account-key "$storageAccountKey" -o json | sed 's/"//g')
-blobEndpoint=$( az storage account show -n "$storageAccountName" -g "$resourceGroupName" -o json | jq -r '.primaryEndpoints.blob' )
+blobEndpoint=$( az storage account show -n "$storageAccountName" -g "$storageAccountRGName" -o json | jq -r '.primaryEndpoints.blob' )
 appPackageUrl=$blobEndpoint$storageContainerName/"$fileName"?$sasToken
 
 if [[ $? -eq 0 ]]; then
