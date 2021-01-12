@@ -199,6 +199,8 @@ appPackageUrl=$blobEndpoint$storageContainerName/"$fileName"?$sasToken
 parametersJson=$( cat $parametersFilePath | jq '.parameters' )
 createAKSCluster=$( echo $parametersJson | jq '.createAKSCluster.value' | sed 's/"//g' )
 parametersJson=$( echo $parametersJson | jq --argjson createCluster "$createAKSCluster" '.createAKSCluster.value = $createCluster' )
+createACR=$( echo $parametersJson | jq '.createACR.value' | sed 's/"//g' )
+parametersJson=$( echo $parametersJson | jq --argjson createRegistry "$createACR" '.createACR.value = $createRegistry' )
 appReplicas=$( echo $parametersJson | jq '.appReplicas.value' | sed 's/"//g' )
 parametersJson=$( echo $parametersJson | jq --argjson replicas "$appReplicas" '.appReplicas.value = $replicas' )
 parametersJson=$( echo "$parametersJson" | jq --arg uri "$appPackageUrl" '{"appPackageUrl": {"value":$uri}} + .' )
