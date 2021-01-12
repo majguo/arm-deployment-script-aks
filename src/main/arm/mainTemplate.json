@@ -37,6 +37,14 @@
             "type": "string",
             "defaultValue": ""
         },
+        "createACR": {
+            "defaultValue": true,
+            "type": "bool"
+        },
+        "acrName": {
+            "type": "string",
+            "defaultValue": ""
+        }, 
         "appPackageUrl": {
             "type": "string"
         },
@@ -53,7 +61,7 @@
         "suffix": "[take(replace(parameters('guidValue'), '-', ''), 6)]",
         "aksClusterName": "[if(parameters('createAKSCluster'), concat('cluster', variables('suffix')), parameters('aksClusterName'))]",
         "aksClusterRGName": "[if(parameters('createAKSCluster'), resourceGroup().name, parameters('aksClusterRGName'))]",
-        "acrName": "[concat('acr', variables('suffix'))]",
+        "acrName": "[if(parameters('createACR'), concat('acr', variables('suffix')), parameters('acrName'))]",
         "appName": "[concat('app', variables('suffix'))]",
         "deploymentScriptName": "[concat('script', variables('suffix'))]",
         "scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]",
@@ -79,6 +87,7 @@
             "type": "Microsoft.ContainerRegistry/registries",
             "name": "[variables('acrName')]",
             "location": "[parameters('location')]",
+            "condition": "[parameters('createACR')]",
             "sku": {
                 "name": "Basic"
             },

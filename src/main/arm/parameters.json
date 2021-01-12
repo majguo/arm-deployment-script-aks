@@ -23,6 +23,12 @@
         "aksClusterRGName": {
             "value": "${aksClusterRGName}"
         },
+        "createACR": {
+            "value": "${createACR}"
+        },
+        "acrName": {
+            "value": "${acrName}"
+        },
         "appReplicas": {
             "value": "${appReplicas}"
         }
