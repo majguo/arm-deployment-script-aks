@@ -160,6 +160,14 @@
             "value": "[variables('aksClusterRGName')]",
             "type": "string"
         },
+        "acrName": {
+            "value": "[variables('acrName')]",
+            "type": "string"
+        },
+        "appImage": {
+            "value": "[variables('appName')]",
+            "type": "string"
+        },
         "appName": {
             "value": "[variables('appName')]",
             "type": "string"
