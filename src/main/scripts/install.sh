@@ -34,9 +34,9 @@ curl -L https://raw.githubusercontent.com/OpenLiberty/open-liberty-operator/mast
       | kubectl apply -n ${OPERATOR_NAMESPACE} -f -
 
 # Log into the ACR
-LOGIN_SERVER=$(az acr show -n $acrName --query loginServer | tr -d '"')
-USER_NAME=$(az acr credential show -n $acrName --query username | tr -d '"')
-PASSWORD=$(az acr credential show -n $acrName --query passwords[0].value | tr -d '"')
+LOGIN_SERVER=$(az acr show -n $acrName --query 'loginServer' -o tsv)
+USER_NAME=$(az acr credential show -n $acrName --query 'username' -o tsv)
+PASSWORD=$(az acr credential show -n $acrName --query 'passwords[0].value' -o tsv)
 docker login $LOGIN_SERVER -u $USER_NAME -p $PASSWORD
 
 # Prepare artifacts for building image
