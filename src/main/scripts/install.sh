@@ -8,7 +8,8 @@ aksClusterName=$2
 acrName=$3
 appPackageUrl=$4
 appName=$5
-appReplicas=$6
+useOpenLibertyImage=$6
+appReplicas=$7
 
 # Install utilities
 apk update
@@ -54,9 +55,12 @@ envsubst < "server.xml.template" > "server.xml"
 envsubst < "Dockerfile.template" > "Dockerfile"
 envsubst < "Dockerfile-wlp.template" > "Dockerfile-wlp"
 
-# Build image
-# TODO: Use appropriate Dockerfile per user input
-az acr build -t ${Application_Name}:1.0.0 -r $acrName .
+# Build application image with Open Liberty or WebSphere Liberty base image
+if [ "$useOpenLibertyImage" = True ]; then
+      az acr build -t ${Application_Name}:1.0.0 -r $acrName .
+else
+      az acr build -t ${Application_Name}:1.0.0 -r $acrName -f Dockerfile-wlp .
+fi
 
 # Deploy openliberty application
 export Application_Image=${LOGIN_SERVER}/${Application_Name}:1.0.0
