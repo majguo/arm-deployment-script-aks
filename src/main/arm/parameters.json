@@ -29,6 +29,9 @@
         "acrName": {
             "value": "${acrName}"
         },
+        "useOpenLibertyImage": {
+            "value": "${useOpenLibertyImage}"
+        },
         "appReplicas": {
             "value": "${appReplicas}"
         }

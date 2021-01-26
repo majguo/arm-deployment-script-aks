@@ -48,6 +48,10 @@
         "appPackageUrl": {
             "type": "string"
         },
+        "useOpenLibertyImage": {
+            "defaultValue": true,
+            "type": "bool"
+        },
         "appReplicas": {
             "type": "int",
             "defaultValue": 1
@@ -65,7 +69,7 @@
         "appName": "[concat('app', variables('suffix'))]",
         "deploymentScriptName": "[concat('script', variables('suffix'))]",
         "scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]",
-        "arguments": "[concat(variables('aksClusterRGName'), ' ', variables('aksClusterName'), ' ', variables('acrName'), ' ', parameters('appPackageUrl'), ' ', variables('appName'), ' ', parameters('appReplicas'))]"
+        "arguments": "[concat(variables('aksClusterRGName'), ' ', variables('aksClusterName'), ' ', variables('acrName'), ' ', parameters('appPackageUrl'), ' ', variables('appName'), ' ', parameters('useOpenLibertyImage'), ' ', parameters('appReplicas'))]"
     },
     "resources": [
         {
