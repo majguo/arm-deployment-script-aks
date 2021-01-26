@@ -201,6 +201,8 @@ createAKSCluster=$( echo $parametersJson | jq '.createAKSCluster.value' | sed 's
 parametersJson=$( echo $parametersJson | jq --argjson createCluster "$createAKSCluster" '.createAKSCluster.value = $createCluster' )
 createACR=$( echo $parametersJson | jq '.createACR.value' | sed 's/"//g' )
 parametersJson=$( echo $parametersJson | jq --argjson createRegistry "$createACR" '.createACR.value = $createRegistry' )
+useOpenLibertyImage=$( echo $parametersJson | jq '.useOpenLibertyImage.value' | sed 's/"//g' )
+parametersJson=$( echo $parametersJson | jq --argjson openliberty "$useOpenLibertyImage" '.useOpenLibertyImage.value = $openliberty' )
 appReplicas=$( echo $parametersJson | jq '.appReplicas.value' | sed 's/"//g' )
 parametersJson=$( echo $parametersJson | jq --argjson replicas "$appReplicas" '.appReplicas.value = $replicas' )
 parametersJson=$( echo "$parametersJson" | jq --arg uri "$appPackageUrl" '{"appPackageUrl": {"value":$uri}} + .' )
