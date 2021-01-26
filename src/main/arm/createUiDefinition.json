@@ -183,6 +183,26 @@
                         }
                     },
                     {
+                        "name": "useOpenLibertyImage",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "Application Java runtime",
+                        "defaultValue": "Open Liberty",
+                        "toolTip": "Select 'Open Liberty' if you prefer Open Source runtime, or select 'WebSphere Liberty' if you prefer commercial version of Open Liberty.",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "Open Liberty",
+                                    "value": "true"
+                                },
+                                {
+                                    "label": "WebSphere Liberty",
+                                    "value": "false"
+                                }
+                            ],
+                            "required": true
+                        }
+                    },
+                    {
                         "name": "appReplicas",
                         "type": "Microsoft.Common.TextBox",
                         "label": "Number of application replicas",
@@ -208,6 +228,7 @@
             "createACR": "[bool(steps('ACRInstance').createACR)]",
             "acrName": "[steps('ACRInstance').acrInfo.acrName]",
             "appPackageUrl": "[steps('Application').appPackageUrl]",
+            "useOpenLibertyImage": "[bool(steps('Application').useOpenLibertyImage)]",
             "appReplicas": "[int(steps('Application').appReplicas)]"
         }
     }
