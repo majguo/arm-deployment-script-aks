@@ -20,9 +20,6 @@ apk add docker-cli
 az aks install-cli
 az aks get-credentials -g $resourceGroupName -n $aksClusterName --overwrite-existing
 
-# Attach the ACR
-az aks update -g $resourceGroupName -n $aksClusterName --attach-acr $acrName
-
 # Install Open Liberty Operator V0.7
 OPERATOR_NAMESPACE=default
 WATCH_NAMESPACE='""'
@@ -65,6 +62,11 @@ fi
 # Deploy openliberty application
 export Application_Image=${LOGIN_SERVER}/${Application_Name}:1.0.0
 export Application_Replicas=$appReplicas
+export Pull_Secret=${Application_Name}-secret
+kubectl create secret docker-registry ${Pull_Secret} \
+      --docker-server=${LOGIN_SERVER} \
+      --docker-username=${USER_NAME} \
+      --docker-password=${PASSWORD}
 envsubst < openlibertyapplication.yaml.template | kubectl create -f -
 
 # Wait until the deployment completes

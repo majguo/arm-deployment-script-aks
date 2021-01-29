@@ -5,6 +5,7 @@ metadata:
 spec:
   replicas: ${Application_Replicas}
   applicationImage: ${Application_Image}
+  pullSecret: ${Pull_Secret}
   service:
     type: LoadBalancer
     port: 9080
