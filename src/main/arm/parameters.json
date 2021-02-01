@@ -11,12 +11,6 @@
         "createAKSCluster": {
             "value": "${createAKSCluster}"
         },
-        "spClientId": {
-            "value": "${spClientId}"
-        },
-        "spClientSecret": {
-            "value": "${spClientSecret}"
-        },
         "aksClusterName": {
             "value": "${aksClusterName}"
         }, 

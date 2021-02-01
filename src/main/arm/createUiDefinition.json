@@ -47,37 +47,6 @@
                         }
                     },
                     {
-                        "name": "servicePrincipal",
-                        "type": "Microsoft.Common.Section",
-                        "label": "Provide a Service Principal to create an AKS cluster",
-                        "elements": [
-                            {
-                                "name": "spClientId",
-                                "type": "Microsoft.Common.TextBox",
-                                "label": "Service principal client ID",
-                                "toolTip": "The client ID of an existing service principal.",
-                                "constraints": {
-                                    "required": true,
-                                    "regex": "^[0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12}$",
-                                    "validationMessage": "The service principal Id should be a valid global unique identifier (GUID). Example: 00000000-0000-0000-0000-000000000000"
-                                }
-                            },
-                            {
-                                "name": "spClientSecret",
-                                "type": "Microsoft.Common.PasswordBox",
-                                "label": {
-                                    "password": "Service principal client secret",
-                                    "confirmPassword": "Confirm client secret"
-                                },
-                                "toolTip": "The client secret of an existing service principal.",
-                                "constraints": {
-                                    "required": true
-                                }
-                            }
-                        ],
-                        "visible": "[bool(steps('AKSCluster').createAKSCluster)]"
-                    },
-                    {
                         "name": "clusterInfo",
                         "type": "Microsoft.Common.Section",
                         "label": "Provide information for an existing AKS cluster",
@@ -221,8 +190,6 @@
             "location": "[location()]",
             "identityId": "[basics('identityId')]",
             "createAKSCluster": "[bool(steps('AKSCluster').createAKSCluster)]",
-            "spClientId": "[steps('AKSCluster').servicePrincipal.spClientId]",
-            "spClientSecret": "[steps('AKSCluster').servicePrincipal.spClientSecret]",
             "aksClusterName": "[steps('AKSCluster').clusterInfo.aksClusterName]",
             "aksClusterRGName": "[steps('AKSCluster').clusterInfo.aksClusterRGName]",
             "createACR": "[bool(steps('ACRInstance').createACR)]",
