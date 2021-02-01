@@ -21,14 +21,6 @@
             "defaultValue": true,
             "type": "bool"
         },
-        "spClientId": {
-            "type": "string",
-            "defaultValue": ""
-        },
-        "spClientSecret": {
-            "type": "securestring",
-            "defaultValue": ""
-        },
         "aksClusterName": {
             "type": "string",
             "defaultValue": ""
@@ -127,11 +119,10 @@
                 "networkProfile": {
                     "loadBalancerSku": "standard",
                     "networkPlugin": "kubenet"
-                },
-                "servicePrincipalProfile": {
-                    "ClientId": "[parameters('spClientId')]",
-                    "Secret": "[parameters('spClientSecret')]"
                 }
+            },
+            "identity": {
+                "type": "SystemAssigned"
             }
         },
         {
