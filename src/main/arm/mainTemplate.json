@@ -14,8 +14,8 @@
             "type": "string",
             "defaultValue": "[resourceGroup().location]"
         },
-        "identityId": {
-            "type": "string"
+        "identity": {
+            "type": "object"
         },
         "createAKSCluster": {
             "defaultValue": true,
@@ -36,11 +36,20 @@
         "acrName": {
             "type": "string",
             "defaultValue": ""
-        }, 
+        },
+        "uploadAppPackage": {
+            "defaultValue": false,
+            "type": "bool"
+        },
         "appPackageUrl": {
+            "defaultValue": "",
             "type": "string"
         },
         "useOpenLibertyImage": {
+            "defaultValue": true,
+            "type": "bool"
+        },
+         "useJava8": {
             "defaultValue": true,
             "type": "bool"
         },
@@ -61,7 +70,7 @@
         "appName": "[concat('app', variables('suffix'))]",
         "deploymentScriptName": "[concat('script', variables('suffix'))]",
         "scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]",
-        "arguments": "[concat(variables('aksClusterRGName'), ' ', variables('aksClusterName'), ' ', variables('acrName'), ' ', parameters('appPackageUrl'), ' ', variables('appName'), ' ', parameters('useOpenLibertyImage'), ' ', parameters('appReplicas'))]"
+        "arguments": "[concat(variables('aksClusterRGName'), ' ', variables('aksClusterName'), ' ', variables('acrName'), ' ', parameters('uploadAppPackage'), ' ', parameters('appPackageUrl'), ' ', variables('appName'), ' ', parameters('useOpenLibertyImage'), ' ', parameters('useJava8'), ' ', parameters('appReplicas'))]"
     },
     "resources": [
         {
@@ -134,12 +143,7 @@
                 "[resourceId('Microsoft.ContainerService/managedClusters', variables('aksClusterName'))]"
             ],
             "kind": "AzureCLI",
-            "identity": {
-                "type": "userAssigned",
-                "userAssignedIdentities": {
-                    "[parameters('identityId')]": {}
-                }
-            },
+            "identity": "[parameters('identity')]",
             "properties": {
                 "AzCliVersion": "2.15.0",
                 "arguments": "[variables('arguments')]",

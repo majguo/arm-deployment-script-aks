@@ -1,15 +1,28 @@
 #!/bin/bash
 
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License.
+#      Copyright (c) Microsoft Corporation.
+# 
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+# 
+#           http://www.apache.org/licenses/LICENSE-2.0
+# 
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 
 resourceGroupName=$1
 aksClusterName=$2
 acrName=$3
-appPackageUrl=$4
-appName=$5
-useOpenLibertyImage=$6
-appReplicas=$7
+uploadAppPackage=$4
+appPackageUrl=$5
+appName=$6
+useOpenLibertyImage=$7
+useJava8=$8
+appReplicas=$9
 
 # Install utilities
 apk update
@@ -37,36 +50,60 @@ USER_NAME=$(az acr credential show -n $acrName --query 'username' -o tsv)
 PASSWORD=$(az acr credential show -n $acrName --query 'passwords[0].value' -o tsv)
 docker login $LOGIN_SERVER -u $USER_NAME -p $PASSWORD
 
-# Prepare artifacts for building image
+# Copy templates to /tmp for customization
 cp server.xml.template /tmp
 cp Dockerfile.template /tmp
 cp Dockerfile-wlp.template /tmp
 cp openlibertyapplication.yaml.template /tmp
 cd /tmp
 
-export Application_Package=${appName}.war
-wget -O ${Application_Package} "$appPackageUrl"
-
-export Application_Name=$appName
-envsubst < "server.xml.template" > "server.xml"
-envsubst < "Dockerfile.template" > "Dockerfile"
-envsubst < "Dockerfile-wlp.template" > "Dockerfile-wlp"
-
-# Build application image with Open Liberty or WebSphere Liberty base image
-if [ "$useOpenLibertyImage" = True ]; then
-      az acr build -t ${Application_Name}:1.0.0 -r $acrName .
+# Determine base image
+export Base_Image=
+if [ "$useOpenLibertyImage" = True ] && [ "$useJava8" = True ]; then
+      Base_Image="openliberty/open-liberty:kernel-java8-openj9-ubi"
+elif [ "$useOpenLibertyImage" = True ] && [ "$useJava8" = False ]; then
+      Base_Image="openliberty/open-liberty:kernel-java11-openj9-ubi"
+elif [ "$useOpenLibertyImage" = False ] && [ "$useJava8" = True ]; then
+      Base_Image="ibmcom/websphere-liberty:kernel-java8-openj9-ubi"
 else
-      az acr build -t ${Application_Name}:1.0.0 -r $acrName -f Dockerfile-wlp .
+      Base_Image="ibmcom/websphere-liberty:kernel-java11-openj9-ubi"
+fi
+
+# Build application image or use default base image
+if [ "$uploadAppPackage" = True ]; then
+      # Prepare artifacts for building image
+      export Application_Package=${appName}.war
+      wget -O ${Application_Package} "$appPackageUrl"
+
+      export Application_Name=$appName
+      envsubst < "server.xml.template" > "server.xml"
+      envsubst < "Dockerfile.template" > "Dockerfile"
+      envsubst < "Dockerfile-wlp.template" > "Dockerfile-wlp"
+
+      # Build application image with Open Liberty or WebSphere Liberty base image
+      if [ "$useOpenLibertyImage" = True ]; then
+            az acr build -t ${Application_Name}:1.0.0 -r $acrName .
+      else
+            az acr build -t ${Application_Name}:1.0.0 -r $acrName -f Dockerfile-wlp .
+      fi
+
+      # Create image pull secret
+      export Pull_Secret=${Application_Name}-secret
+      kubectl create secret docker-registry ${Pull_Secret} \
+            --docker-server=${LOGIN_SERVER} \
+            --docker-username=${USER_NAME} \
+            --docker-password=${PASSWORD}
+
+      export Application_Image=${LOGIN_SERVER}/${Application_Name}:1.0.0
+else
+      # Remove image pull secret
+      sed -i "/pullSecret/d" openlibertyapplication.yaml.template
+      
+      export Application_Image=${Base_Image}
 fi
 
 # Deploy openliberty application
-export Application_Image=${LOGIN_SERVER}/${Application_Name}:1.0.0
 export Application_Replicas=$appReplicas
-export Pull_Secret=${Application_Name}-secret
-kubectl create secret docker-registry ${Pull_Secret} \
-      --docker-server=${LOGIN_SERVER} \
-      --docker-username=${USER_NAME} \
-      --docker-password=${PASSWORD}
 envsubst < openlibertyapplication.yaml.template | kubectl create -f -
 
 # Wait until the deployment completes

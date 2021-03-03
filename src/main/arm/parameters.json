@@ -5,8 +5,13 @@
         "_artifactsLocation": {
             "value": "${artifactsLocationBase}/${project.artifactId}/${git.tag}/src/main/"
         },
-        "identityId": {
-            "value": "${identityId}"
+        "identity": {
+            "value": {
+                "type": "userAssigned",
+                "userAssignedIdentities": {
+                    "${identityId}": {}
+                }
+            }
         },
         "createAKSCluster": {
             "value": "${createAKSCluster}"
@@ -23,8 +28,14 @@
         "acrName": {
             "value": "${acrName}"
         },
+        "uploadAppPackage": {
+            "value": "${uploadAppPackage}"
+        },
         "useOpenLibertyImage": {
             "value": "${useOpenLibertyImage}"
+        },
+        "useJava8": {
+            "value": "${useJava8}"
         },
         "appReplicas": {
             "value": "${appReplicas}"

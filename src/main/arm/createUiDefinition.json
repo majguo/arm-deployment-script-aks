@@ -5,14 +5,18 @@
     "parameters": {
         "basics": [
             {
-                "name": "identityId",
-                "type": "Microsoft.Common.TextBox",
-                "label": "User Assigned Managed Identity",
-                "toolTip": "Input the id of User Assigned Managed Identity.",
-                "constraints": {
-                    "required": true,
-                    "regex": "^[a-z0-9A-Z\\-\\.\\/]+$",
-                    "validationMessage": "The user assigned managed identity ID should be a valid Azure resource ID. Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}"
+                "name": "identity",
+                "type": "Microsoft.ManagedIdentity.IdentitySelector",
+                "label": "Managed Identity Configuration",
+                "toolTip": {
+                    "userAssignedIdentity": "Add user-assigned identities to enable the app deployment."
+                },
+                "defaultValue": {
+                    "systemAssignedIdentity": "Off"
+                },
+                "options": {
+                    "hideSystemAssignedIdentity": true,
+                    "hideUserAssignedIdentity": false
                 }
             }
         ],
@@ -138,23 +142,51 @@
                 "bladeTitle": "Configure Java EE Application",
                 "elements": [
                     {
-                        "name": "appPackageUrl",
-                        "type": "Microsoft.Common.FileUpload",
-                        "label": "Application package (.war)",
-                        "toolTip": "The application war package to deploy.",
+                        "name": "uploadAppPackage",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "Deploy your application package?",
+                        "defaultValue": "Yes",
+                        "toolTip": "Select 'Yes' to deploy your application, or select 'No' to deploy a default 'hello world' open liberty application.",
                         "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "Yes",
+                                    "value": "true"
+                                },
+                                {
+                                    "label": "No",
+                                    "value": "false"
+                                }
+                            ],
                             "required": true
-                        },
-                        "options": {
-                            "multiple": false,
-                            "uploadMode": "url",
-                            "openMode": "binary"
                         }
+                    },
+                    {
+                        "name": "appPackageInfo",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Provide information for your application package",
+                        "elements": [
+                            {
+                                "name": "appPackageUrl",
+                                "type": "Microsoft.Common.FileUpload",
+                                "label": "Application package (.war)",
+                                "toolTip": "The application war package to deploy.",
+                                "constraints": {
+                                    "required": true
+                                },
+                                "options": {
+                                    "multiple": false,
+                                    "uploadMode": "url",
+                                    "openMode": "binary"
+                                }
+                            }
+                        ],
+                        "visible": "[bool(steps('Application').appPackage)]"
                     },
                     {
                         "name": "useOpenLibertyImage",
                         "type": "Microsoft.Common.OptionsGroup",
-                        "label": "Application Java runtime",
+                        "label": "Application server runtime",
                         "defaultValue": "Open Liberty",
                         "toolTip": "Select 'Open Liberty' if you prefer Open Source runtime, or select 'WebSphere Liberty' if you prefer commercial version of Open Liberty.",
                         "constraints": {
@@ -165,6 +197,26 @@
                                 },
                                 {
                                     "label": "WebSphere Liberty",
+                                    "value": "false"
+                                }
+                            ],
+                            "required": true
+                        }
+                    },
+                    {
+                        "name": "useJava8",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "Application Java runtime",
+                        "defaultValue": "Java 8",
+                        "toolTip": "Select Java version for your application.",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "Java 8",
+                                    "value": "true"
+                                },
+                                {
+                                    "label": "Java 11",
                                     "value": "false"
                                 }
                             ],
@@ -188,14 +240,16 @@
         ],
         "outputs": {
             "location": "[location()]",
-            "identityId": "[basics('identityId')]",
+            "identity": "[basics('identity')]",
             "createAKSCluster": "[bool(steps('AKSCluster').createAKSCluster)]",
             "aksClusterName": "[steps('AKSCluster').clusterInfo.aksClusterName]",
             "aksClusterRGName": "[steps('AKSCluster').clusterInfo.aksClusterRGName]",
             "createACR": "[bool(steps('ACRInstance').createACR)]",
             "acrName": "[steps('ACRInstance').acrInfo.acrName]",
-            "appPackageUrl": "[steps('Application').appPackageUrl]",
+            "uploadAppPackage": "[bool(steps('Application').uploadAppPackage)]",
+            "appPackageUrl": "[steps('Application').appPackageInfo.appPackageUrl]",
             "useOpenLibertyImage": "[bool(steps('Application').useOpenLibertyImage)]",
+            "useJava8": "[bool(steps('Application').useJava8)]",
             "appReplicas": "[int(steps('Application').appReplicas)]"
         }
     }
