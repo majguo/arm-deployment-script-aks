@@ -99,7 +99,7 @@ else
       # Remove image pull secret
       sed -i "/pullSecret/d" openlibertyapplication.yaml.template
       
-      export Application_Image=${Base_Image}
+      export Application_Image=$(echo "${Base_Image/kernel/full}")
 fi
 
 # Deploy openliberty application
