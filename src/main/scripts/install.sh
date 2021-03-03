@@ -70,12 +70,12 @@ else
 fi
 
 # Build application image or use default base image
+export Application_Name=$appName
 if [ "$uploadAppPackage" = True ]; then
       # Prepare artifacts for building image
       export Application_Package=${appName}.war
       wget -O ${Application_Package} "$appPackageUrl"
 
-      export Application_Name=$appName
       envsubst < "server.xml.template" > "server.xml"
       envsubst < "Dockerfile.template" > "Dockerfile"
       envsubst < "Dockerfile-wlp.template" > "Dockerfile-wlp"

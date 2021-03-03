@@ -173,7 +173,7 @@
             "type": "string"
         },
         "appImage": {
-            "value": "[variables('appName')]",
+            "value": "[if(parameters('uploadAppPackage'), variables('appName'), 'Open Liberty/WebSphere Liberty base image')]",
             "type": "string"
         },
         "appName": {
