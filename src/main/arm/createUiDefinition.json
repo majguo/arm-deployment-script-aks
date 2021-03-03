@@ -179,9 +179,21 @@
                                     "uploadMode": "url",
                                     "openMode": "binary"
                                 }
+                            },
+                            {
+                                "name": "contextRoot",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Application context root",
+                                "defaultValue": "/",
+                                "toolTip": "Specify the context root of your application.",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^\/.*$",
+                                    "validationMessage": "The value must start with '/'."
+                                }
                             }
                         ],
-                        "visible": "[bool(steps('Application').appPackage)]"
+                        "visible": "[bool(steps('Application').uploadAppPackage)]"
                     },
                     {
                         "name": "useOpenLibertyImage",
@@ -248,6 +260,7 @@
             "acrName": "[steps('ACRInstance').acrInfo.acrName]",
             "uploadAppPackage": "[bool(steps('Application').uploadAppPackage)]",
             "appPackageUrl": "[steps('Application').appPackageInfo.appPackageUrl]",
+            "contextRoot": "[steps('Application').appPackageInfo.contextRoot]",
             "useOpenLibertyImage": "[bool(steps('Application').useOpenLibertyImage)]",
             "useJava8": "[bool(steps('Application').useJava8)]",
             "appReplicas": "[int(steps('Application').appReplicas)]"
