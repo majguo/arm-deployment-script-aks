@@ -19,10 +19,11 @@ aksClusterName=$2
 acrName=$3
 uploadAppPackage=$4
 appPackageUrl=$5
-appName=$6
+contextRoot=$6
 useOpenLibertyImage=$7
 useJava8=$8
 appReplicas=$9
+appName=${10}
 
 # Install utilities
 apk update
@@ -72,6 +73,8 @@ fi
 # Build application image or use default base image
 export Application_Name=$appName
 if [ "$uploadAppPackage" = True ]; then
+      export Context_Root=$contextRoot
+
       # Prepare artifacts for building image
       export Application_Package=${appName}.war
       wget -O ${Application_Package} "$appPackageUrl"
@@ -96,6 +99,8 @@ if [ "$uploadAppPackage" = True ]; then
 
       export Application_Image=${LOGIN_SERVER}/${Application_Name}:1.0.0
 else
+      export Context_Root=/
+      
       # Remove image pull secret
       sed -i "/pullSecret/d" openlibertyapplication.yaml.template
       
@@ -139,6 +144,7 @@ do
       echo retry
       Application_Endpoint=$(kubectl get svc ${Application_Name} -o=jsonpath='{.status.loadBalancer.ingress[0].ip}:{.spec.ports[0].port}')
 done
+Application_Endpoint=$(echo ${Application_Endpoint}${Context_Root})
 
 # Output application endpoint
 echo "endpoint is: $Application_Endpoint"

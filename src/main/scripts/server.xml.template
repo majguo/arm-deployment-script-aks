@@ -30,7 +30,7 @@
     <applicationManager autoExpand="true" />
 
     <!-- Define web application with its context root and location -->
-    <webApplication id="${Application_Name}" contextRoot="/"
+    <webApplication id="${Application_Name}" contextRoot="${Context_Root}"
         location="${server.config.dir}/apps/${Application_Package}">
     </webApplication>
 </server>

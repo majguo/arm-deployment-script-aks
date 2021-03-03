@@ -31,6 +31,9 @@
         "uploadAppPackage": {
             "value": "${uploadAppPackage}"
         },
+        "contextRoot": {
+            "value": "${contextRoot}"
+        },
         "useOpenLibertyImage": {
             "value": "${useOpenLibertyImage}"
         },
