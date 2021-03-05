@@ -69,7 +69,8 @@
     "variables": {
         "const_aksClusterRGName": "[if(parameters('createAKSCluster'), resourceGroup().name, parameters('aksClusterRGName'))]",
         "const_appName": "[concat('app', variables('const_suffix'))]",
-        "const_arguments": "[concat(variables('const_aksClusterRGName'), ' ', variables('name_aksClusterName'), ' ', variables('name_acrName'), ' ', parameters('uploadAppPackage'), ' ', parameters('appPackageUrl'), ' ', parameters('contextRoot'), ' ', parameters('useOpenLibertyImage'), ' ', parameters('useJava8'), ' ', parameters('appReplicas'), ' ', variables('const_appName'))]",
+        "const_appPackageUrl": "[if(parameters('uploadAppPackage'), parameters('appPackageUrl'), 'N/A')]",
+        "const_arguments": "[concat(variables('const_aksClusterRGName'), ' ', variables('name_aksClusterName'), ' ', variables('name_acrName'), ' ', parameters('uploadAppPackage'), ' ', variables('const_appPackageUrl'), ' ', parameters('contextRoot'), ' ', parameters('useOpenLibertyImage'), ' ', parameters('useJava8'), ' ', parameters('appReplicas'), ' ', variables('const_appName'))]",
         "const_scriptLocation": "[uri(parameters('_artifactsLocation'), 'scripts/')]",
         "const_suffix": "[take(replace(parameters('guidValue'), '-', ''), 6)]",
         "name_acrName": "[if(parameters('createACR'), concat('acr', variables('const_suffix')), parameters('acrName'))]",
